@@ -23,7 +23,7 @@ Muhamad Pauzi, A., Iacovides, H., Cioncolini, A., Li, H., & Nabawy, M. R. A. (20
 
 | Folder | Description |
 |---------|--------------|
-| `2/` | Initial and boundary conditions | 
+| `0/` | Initial and boundary conditions | 
 | `constant/` | Material properties, turbulence models, and mesh setup |
 | `system/` | Solver controls, discretisation, and FSI coupling settings |
 
