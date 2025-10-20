@@ -41,8 +41,11 @@ Muhamad Pauzi, A., Iacovides, H., Cioncolini, A., Li, H., & Nabawy, M. R. A. (20
 ## ▶️ How to Run
 chmod +x Allrun  
 ./Allrun
-## To clean up after simulation:
+
+## ▶️ To clean up after simulation:
 ./Allclean
+
+---
 
 📜 Licence
 
@@ -52,6 +55,9 @@ It builds upon the OpenFOAM® framework and follows its open-source licensing po
 See the LICENSE file for details.
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+---
+
+
 📩 Citation
 
 If you use this repository, please cite the following works:
@@ -60,6 +66,8 @@ Muhamad Pauzi, A., Iacovides, H., Cioncolini, A., Li, H., & Nabawy, M. R. A. (20
 
 Muhamad Pauzi, A. (2025). URANS–FSI Case Files and Scripts.
 Zenodo. DOI: https://doi.org/10.5281/zenodo.17399072
+
+---
 
 💡 Acknowledgements
 
