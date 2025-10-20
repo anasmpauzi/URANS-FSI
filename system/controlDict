@@ -1,0 +1,180 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.0                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     solids4Foam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         6;
+
+deltaT          1e-4;
+
+writeControl    timeStep;
+
+writeInterval   1000;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression uncompressed;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+adjustTimeStep  no;
+
+maxCo           0.2;
+
+functions
+(
+    pointDisp
+    {
+        type    		solidPointDisplacement;
+        point   		(0 0 0.05);
+    }
+    minmax
+    {
+	type 			fieldMinMax;
+        region              	fluid;
+	functionObjectLibs 	("libfieldFunctionObjects.so");
+	enabled 		true;
+	mode component;
+	outputControl 		timeStep;
+	outputInterval		1;
+	log 			true;
+	fields 		        (U);
+    }
+    forces
+    {
+	type                	forces;
+	region			fluid;
+	functionObjectLibs  	( "libforces.so" );
+	outputControl       	timeStep;
+	outputInterval      	1;
+	patches             	(rod);
+	pName               	p;
+	UName               	U;
+	rhoName             	rhoInf;
+	log                 	true;
+	rhoInf              	1000; // freestream density [kg/m3]
+	CofR                	(0 0 1.11);// centre of rotation for moment calculation
+    }
+    minmax
+    {
+	type 			fieldMinMax;
+        region              	fluid;
+	functionObjectLibs 	("libfieldFunctionObjects.so");
+	enabled 		true;
+	mode component;
+	outputControl 		timeStep;
+	outputInterval		1;
+	log 			true;
+	fields 		(U);
+    }
+    forceCoeffs_x
+    {
+	type 			forceCoeffs;
+	functionObjectLibs 	("libforces.so");
+	region			fluid;
+	patches 		(rod);
+	pName 			p;
+	Uname 			U;
+	rhoName 		rhoInf;//reference density
+	rhoInf 		        1000;// [kg/m3]
+	log 			true;// Dump to file
+	CofR 			(0 0 1.11);// CofR = Centre of rotation
+	liftDir 		(1 0 0); // lift direction (x+)
+	dragDir 		(0 0 1); // drag direction (z+)
+	pitchAxis 		(0 1 0);// pitchAxis - Pitching moment axis
+	magUInf 		2.39;  // freestream velocity [m/s]
+	lRef 			1.06; // reference lenght = L_rod [m]
+	Aref 			0.00007869697451;// reference area = A_rod=pi*d_ro^2/4
+        outputControl   	timeStep;
+        outputInterval  	1;
+    }
+    forceCoeffs_y
+    {
+	type 			forceCoeffs;
+	functionObjectLibs 	("libforces.so");
+	region			fluid;
+	patches 		(rod);
+	pName 			p;
+	Uname 			U;
+	rhoName 		rhoInf;//reference density
+	rhoInf 		        1000;// [kg/m3]
+	log 			true;// Dump to file
+	CofR 			(0 0 1.11);// CofR = Centre of rotation
+	liftDir 		(0 1 0); // lift direction (y+)
+	dragDir 		(0 0 1); // drag direction (z+)
+	pitchAxis 		(1 0 0);// pitchAxis - Pitching moment axis
+	magUInf 		2.39;  // freestream velocity [m/s]
+	lRef 			1.06; // reference lenght = L_rod [m]
+	Aref 			0.00007869697451;// reference area = A_rod=pi*d_ro^2/4
+        outputControl   	timeStep;
+        outputInterval  	1;
+    }
+    probesU
+    {
+       type                probes;
+       functionObjectLibs  ("libsampling.so");
+       outputControl       timeStep;
+       outputInterval      1;
+       probeLocations
+       (
+           (0.000 0.00775 0.05945) // r/gap=0.5
+           (0 0 0.04055) // centreline upstream
+       );
+       fixedLocations  false;
+       fields (U p);
+       region fluid;
+    }
+    fieldAverage
+    {
+       type            fieldAverage;
+       functionObjectLibs ("libfieldFunctionObjects.so");
+       region fluid;
+       enabled         true;
+       outputControl   outputTime;
+       //outputControl   timeStep;
+       //outputInterval  100;
+       //cleanRestart true;
+
+       timeStart       3;
+       timeEnd        10;
+
+       fields
+       (
+            U
+            {
+                mean        on;
+                prime2Mean  on;
+                base        time;
+            }
+       );
+   }
+);
+// ************************************************************************* //

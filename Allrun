@@ -1,0 +1,62 @@
+#!/bin/bash
+# ---------------------------------------------------------------------------
+# Allrun script for URANS–FSI (foam-extend 4.0 + solids4Foam)
+# Author: Anas Muhamad Pauzi
+# ---------------------------------------------------------------------------
+
+set -e  # exit on first error
+
+# Load environment (if foam-extend not already sourced)
+if [ -z "$WM_PROJECT_DIR" ]; then
+    echo "Loading foam-extend environment..."
+    module load foam-extend/4.0 2>/dev/null || \
+    source /opt/foam/foam-extend-4.0/etc/bashrc 2>/dev/null || {
+        echo "Please source your foam-extend/4.0 environment before running."
+        exit 1
+    }
+fi
+
+# Number of processors (override with: NP=8 ./Allrun)
+NP=${NP:-16}
+
+echo "----------------------------------------------"
+echo " Running URANS–FSI case using $NP processors "
+echo "----------------------------------------------"
+echo ""
+
+# (Re)build meshes from blockMeshDict to avoid committing large polyMesh to git
+echo "Cleaning any existing polyMesh directories..."
+rm -rf constant/fluid/polyMesh constant/solid/polyMesh
+
+echo "Generating meshes with blockMesh..."
+blockMesh -region fluid > log.blockMesh.fluid
+blockMesh -region solid > log.blockMesh.solid
+
+# --- Turbulence initialisation (RSM LRR model) ------------------------------
+# If R field is missing, initialise by running R-equation solver
+if [ ! -f "0/fluid/R" ]; then
+    echo "Initialising Reynolds-stress tensor field (R)..."
+    R -region fluid > log.Rinit.fluid
+else
+    echo "R field already exists — skipping R initialisation."
+fi
+
+# Decompose regions for parallel run
+echo "Decomposing regions..."
+decomposePar -region fluid  > log.decomposePar.fluid
+decomposePar -region solid  > log.decomposePar.solid
+
+# Run solver
+echo "Starting solids4Foam solver..."
+mpirun -np "$NP" solids4Foam -parallel > log.solids4Foam
+
+# Reconstruct results
+echo "Reconstructing regions..."
+reconstructPar -region fluid  > log.reconstructPar.fluid
+reconstructPar -region solid  > log.reconstructPar.solid
+
+echo ""
+echo "----------------------------------------------"
+echo " Simulation completed successfully!"
+echo "----------------------------------------------"
+

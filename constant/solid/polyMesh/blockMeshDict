@@ -1,0 +1,351 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  | Copyright:   ANAS MUHAMAD PAUZI                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+scale         0.001; // unit [mm]
+
+// Diameters
+d_ro           10.01; // Outer diameter of rod
+d_ri            8.83; // Inner diameter of rod
+
+// Radius
+r_ro             #calc "$d_ro/2"; // Outer radius of rod
+r_ri             #calc "$d_ri/2";  // Inner radius of rod
+neg_r_ro         #calc "-$r_ro"; // Negetive value of outer radius
+neg_r_ri         #calc "-$r_ri"; // Negetive value of inner radius
+
+// Cell size
+dzFixedEnd      0.75;
+dzFreeEnd          3;
+gradzCorrector  0.85; // To produce continuous grading
+dz_ave           #calc "$gradzCorrector*0.5*($dzFixedEnd+$dzFreeEnd)";
+
+// Axial coordinate
+zFixedEnd       1110; // At fixed end
+zCapEnd         51.3; // dispPatch
+zFreeEnd          50; // At free_end
+
+// Gradients
+gradz_cap          1;
+gradr_cap          1; //Gradient of the radial of inner cylinder at CapEnd 
+gradz_rodTop     #calc "$dzFixedEnd/$dzFreeEnd"; //
+gradz_rodBottom  #calc "$dzFreeEnd/$dzFixedEnd";
+
+zRodTop          0.95;
+zRodBottom       #calc "1-$zRodTop";
+wRodTop          0.95;
+wRodBottom       #calc "1-$wRodTop";
+
+// Number of intervals
+nCirc             48; // circumference
+nCircQuarter     #calc "$nCirc/4";
+nAxial_rod       #calc "round(($zFixedEnd-$zCapEnd)/$dz_ave)"; //
+nAxial_cap         2; //#calc "($zCapEnd-$zFreeEnd)/$dzFreeEnd"; // Axially at cap
+nRadial_rod        2; // Radially at cladding
+nRadial_cap        1; // Radially at cap end
+nRadial_inner      4; // Centre square and inner cylinder at cap
+
+// Inner square mesh cylinder
+dr_rod           #calc "($d_ro-$d_ri)/(2.5*$nRadial_cap)";// cell size of rod
+L_curvedSides    #calc "$nCircQuarter*$dr_rod"; // length of curved sides inner square
+curveness       0.85; // curveness of inner square
+L_sides          #calc "$L_curvedSides*$curveness";
+s                #calc "$L_sides/2"; // half length of square side
+sc               #calc "$L_curvedSides/2"; // length of curved sides
+neg_s            #calc "-$s"; //
+neg_sc           #calc "-$sc"; //
+
+// Arces 
+halfAngle         45;// [degree]
+radHalfAngle     #calc "degToRad($halfAngle)"; // [radian]
+arc_ri           #calc "$r_ri*sin($radHalfAngle)"; //
+neg_arc_ri       #calc "$r_ri*sin(-$radHalfAngle)"; //
+arc_ro           #calc "$r_ro*sin($radHalfAngle)"; //
+neg_arc_ro       #calc "$r_ro*sin(-$radHalfAngle)"; //
+
+vertices
+(
+//  freeEnd cladding
+    ($r_ri 0 $zFreeEnd)  //   Inner_R       0
+    ($r_ro 0 $zFreeEnd) //   Outer_R        1
+    (0 $r_ro $zFreeEnd) //   Outer_T        2
+    (0 $r_ri $zFreeEnd)  //   Top Inner     3
+    ($neg_r_ro 0 $zFreeEnd)   //Left out    4
+    ($neg_r_ri 0 $zFreeEnd)    //Left in    5
+    (0 $neg_r_ro $zFreeEnd)// Outer         6
+    (0 $neg_r_ri $zFreeEnd) // Inner        7
+//  capEndB cladding
+    ($r_ri 0 $zCapEnd)//  Right Inner       8
+    ($r_ro 0 $zCapEnd)// Right Outer        9
+    (0 $r_ro $zCapEnd)// Top Outer         10
+    (0 $r_ri $zCapEnd)//  Top Inner        11
+    ($neg_r_ro 0 $zCapEnd)//Left out       12
+    ($neg_r_ri 0 $zCapEnd) //Left inn      13
+    (0 $neg_r_ro $zCapEnd) //Outer         14
+    (0 $neg_r_ri $zCapEnd) // Inner        15
+//  capEndT cladding
+    ($r_ri 0 $zCapEnd)//  Right Inner      16
+    ($r_ro 0 $zCapEnd)// Right Outer       17
+    (0 $r_ro $zCapEnd)// Top Outer         18
+    (0 $r_ri $zCapEnd)//  Top Inner        19
+    ($neg_r_ro 0 $zCapEnd)//Left out       20
+    ($neg_r_ri 0 $zCapEnd) //Left inn      21
+    (0 $neg_r_ro $zCapEnd) //Outer         22
+    (0 $neg_r_ri $zCapEnd) // Inner        23
+//  fixedEnd cladding
+    ($r_ri 0 $zFixedEnd)//    Right Inner  24
+    ($r_ro 0 $zFixedEnd)//   Right Outer   25
+    (0 $r_ro $zFixedEnd)//   Top Outer     26
+    (0 $r_ri $zFixedEnd) //   Top Inner    27
+    ($neg_r_ro 0 $zFixedEnd)//Left outer   28
+    ($neg_r_ri 0 $zFixedEnd) //Left inner  29
+    (0 $neg_r_ro $zFixedEnd)// Outer       30
+    (0 $neg_r_ri $zFixedEnd) // Inner      31
+//  freeEnd - inner cylinder
+    ($s $neg_s $zFreeEnd)                //32
+    ($neg_s $neg_s $zFreeEnd)            //33             
+    ($neg_s $s $zFreeEnd)                //34                   
+    ($s $s $zFreeEnd)                    //35         
+    ($arc_ri $neg_arc_ri $zFreeEnd)      //36       
+    ($neg_arc_ri $neg_arc_ri $zFreeEnd)  //37   
+    ($neg_arc_ri $arc_ri $zFreeEnd)      //38  
+    ($arc_ri $arc_ri $zFreeEnd)          //39     
+//  capEnd - inner cylinder
+    ($s $neg_s $zCapEnd)                 //40
+    ($neg_s $neg_s $zCapEnd)             //41            
+    ($neg_s $s $zCapEnd)                 //42           
+    ($s $s $zCapEnd)                     //43              
+    ($arc_ri $neg_arc_ri $zCapEnd)       //44      
+    ($neg_arc_ri $neg_arc_ri $zCapEnd)   //45 
+    ($neg_arc_ri $arc_ri $zCapEnd)       //46
+    ($arc_ri $arc_ri $zCapEnd)           //47
+);
+
+blocks
+(
+//  Cladding at cap
+    hex (0 1 2 3 8 9 10 11) ($nRadial_rod $nCircQuarter $nAxial_cap)//NE 0
+    simpleGrading (1 1 $gradz_cap)
+    hex (3 2 4 5 11 10 12 13) ($nRadial_rod $nCircQuarter $nAxial_cap)//NW 1
+    simpleGrading (1 1 $gradz_cap)
+    hex (5 4 6 7 13 12 14 15) ($nRadial_rod $nCircQuarter $nAxial_cap)//SW 2 
+    simpleGrading (1 1 $gradz_cap)
+    hex (7 6 1 0 15 14 9 8) ($nRadial_rod $nCircQuarter $nAxial_cap)//SE 3
+    simpleGrading (1 1 $gradz_cap)
+//  cladding at rod
+    hex (16 17 18 19 24 25 26 27) ($nRadial_rod $nCircQuarter $nAxial_rod)//NE 4
+    simpleGrading (1 1 
+            (// Axial
+            ($zRodBottom $wRodBottom $gradz_rodBottom)
+            ($zRodTop    $wRodTop    $gradz_rodTop   )
+            ))
+    hex (19 18 20 21 27 26 28 29) ($nRadial_rod $nCircQuarter $nAxial_rod)//NW 5
+    simpleGrading (1 1 
+            (// Axial
+            ($zRodBottom $wRodBottom $gradz_rodBottom)
+            ($zRodTop    $wRodTop    $gradz_rodTop   )
+            ))
+    hex (21 20 22 23 29 28 30 31) ($nRadial_rod $nCircQuarter $nAxial_rod)//SW 6
+    simpleGrading (1 1 
+            (// Axial
+            ($zRodBottom $wRodBottom $gradz_rodBottom)
+            ($zRodTop    $wRodTop    $gradz_rodTop   )
+            ))
+    hex (23 22 17 16 31 30 25 24) ($nRadial_rod $nCircQuarter $nAxial_rod)//SE 7
+    simpleGrading (1 1 
+            (// Axial
+            ($zRodBottom $wRodBottom $gradz_rodBottom)
+            ($zRodTop    $wRodTop    $gradz_rodTop   )
+            ))
+//  Inner cylinder at cap
+    hex (33 32 35 34 41 40 43 42) //inner square 8
+    ($nCircQuarter $nCircQuarter $nAxial_cap) 
+    simpleGrading (1 1 $gradz_cap) 
+    hex (32 36 39 35 40 44 47 43) //E 9
+    ($nRadial_inner $nCircQuarter $nAxial_cap) 
+    simpleGrading ($gradr_cap 1 $gradz_cap) 
+    hex (35 39 38 34 43 47 46 42) //N 10
+    ($nRadial_inner $nCircQuarter $nAxial_cap)  
+    simpleGrading ($gradr_cap 1 $gradz_cap)                         
+    hex (34 38 37 33 42 46 45 41) //W 11
+    ($nRadial_inner $nCircQuarter $nAxial_cap)  
+    simpleGrading ($gradr_cap 1 $gradz_cap)
+    hex (33 37 36 32 41 45 44 40) //S 12
+    ($nRadial_inner $nCircQuarter $nAxial_cap) 
+    simpleGrading ($gradr_cap 1 $gradz_cap) 
+);
+
+edges
+(
+//  cladding at freeEnd
+    // outer
+    arc 1 2 ($arc_ro $arc_ro $zFreeEnd)//NE
+    arc 2 4 ($neg_arc_ro $arc_ro $zFreeEnd)//NW
+    arc 4 6 ($neg_arc_ro $neg_arc_ro $zFreeEnd)//SW
+    arc 6 1 ($arc_ro $neg_arc_ro $zFreeEnd)//SE
+    // inner
+    arc 0 3 ($arc_ri $arc_ri $zFreeEnd)//NE
+    arc 3 5 ($neg_arc_ri $arc_ri $zFreeEnd)//NW
+    arc 5 7 ($neg_arc_ri $neg_arc_ri $zFreeEnd)//SW
+    arc 7 0 ($arc_ri $neg_arc_ri $zFreeEnd)//SE
+
+//  cladding at capEndB
+    // outer
+    arc  9 10 ($arc_ro $arc_ro $zCapEnd)//NE
+    arc 10 12 ($neg_arc_ro $arc_ro $zCapEnd)//NW
+    arc 12 14 ($neg_arc_ro $neg_arc_ro $zCapEnd)//SW
+    arc 14  9 ($arc_ro $neg_arc_ro $zCapEnd)//SE
+    // inner
+    arc  8 11 ($arc_ri $arc_ri $zCapEnd)//NE
+    arc 11 13 ($neg_arc_ri $arc_ri $zCapEnd)//NW
+    arc 13 15 ($neg_arc_ri $neg_arc_ri $zCapEnd)//SW
+    arc 15  8 ($arc_ri $neg_arc_ri $zCapEnd)//SE
+
+//  cladding at capEndT
+    // outer
+    arc 17 18 ($arc_ro $arc_ro $zCapEnd)//NE
+    arc 18 20 ($neg_arc_ro $arc_ro $zCapEnd)//NW
+    arc 20 22 ($neg_arc_ro $neg_arc_ro $zCapEnd)//SW
+    arc 22 17 ($arc_ro $neg_arc_ro $zCapEnd)//SE
+    // inner
+    arc 16 19 ($arc_ri $arc_ri $zCapEnd)//NE
+    arc 19 21 ($neg_arc_ri $arc_ri $zCapEnd)//NW
+    arc 21 23 ($neg_arc_ri $neg_arc_ri $zCapEnd)//SW
+    arc 23 16 ($arc_ri $neg_arc_ri $zCapEnd)//SE
+
+//  cladding at fixedEnd
+    // outer
+    arc 25 26 ($arc_ro $arc_ro $zFixedEnd)//NE
+    arc 26 28 ($neg_arc_ro $arc_ro $zFixedEnd)//NW
+    arc 28 30 ($neg_arc_ro $neg_arc_ro $zFixedEnd)//SW
+    arc 30 25 ($arc_ro $neg_arc_ro $zFixedEnd)//SE
+    // inner
+    arc 24 27 ($arc_ri $arc_ri $zFixedEnd)//NE
+    arc 27 29 ($neg_arc_ri $arc_ri $zFixedEnd)//NW
+    arc 29 31 ($neg_arc_ri $neg_arc_ri $zFixedEnd)//SW
+    arc 31 24 ($arc_ri $neg_arc_ri $zFixedEnd)//SE
+
+//  inner cylinder at freeEnd
+    // outer
+    arc 36 39 ($r_ri 0 $zFreeEnd)//E
+    arc 36 37 (0 $neg_r_ri $zFreeEnd)//S
+    arc 37 38 ($neg_r_ri 0 $zFreeEnd)//W
+    arc 38 39 (0 $r_ri $zFreeEnd)//N
+    // square
+    arc 32 35 ($sc 0 $zFreeEnd)//E
+    arc 32 33 (0 $neg_sc $zFreeEnd)//S
+    arc 33 34 ($neg_sc 0 $zFreeEnd)//W
+    arc 34 35 (0 $sc $zFreeEnd)//N
+
+//  inner cylinder at capEnd
+    // outer
+    arc 44 47 ($r_ri 0 $zCapEnd)//E
+    arc 44 45 (0 $neg_r_ri $zCapEnd)//S
+    arc 45 46 ($neg_r_ri 0 $zCapEnd)//W
+    arc 46 47 (0 $r_ri $zCapEnd)//N
+    // square
+    arc 40 43 ($sc 0 $zCapEnd)//E
+    arc 40 41 (0 $neg_sc $zCapEnd)//S
+    arc 41 42 ($neg_sc 0 $zCapEnd)//W
+    arc 42 43 (0 $sc $zCapEnd)//N
+);
+
+patches // boundaries
+(
+    patch rod
+    (
+        // Cap cladding outer sides
+        ( 1  2 10  9)//NE
+        ( 2  4 12 10)//NW
+        ( 4  6 14 12)//SW
+        ( 6  1  9 14)//SE
+        // Rod cladding outer sides
+        (17 18 26 25)//NE
+        (18 20 28 26)//NW
+        (20 22 30 28)//SW
+        (22 17 25 30)//SE
+        // Cap cladding bottom
+        (0 1 2 3)//NE
+        (3 2 4 5)//NW
+        (5 4 6 7)//SW
+        (7 6 1 0)//SE
+        // Cap inner cylinder bottom
+        (33 32 35 34)//square
+        (32 36 39 35)//E
+        (35 39 38 34)//N
+        (34 38 37 33)//W
+        (33 37 36 32)//S
+    )
+    patch fixed_end
+    (
+        (24 25 26 27)//NE
+        (27 26 28 29)//NW
+        (29 28 30 31)//SW
+        (31 30 25 24)//SE
+    )
+    patch rod_internal
+    (
+        // Rod cladding inner sides
+        (24 27 19 16)//NE
+        (29 27 19 21)//NW
+        (29 31 23 21)//SW
+        (31 24 16 23)//SE
+        // Cap inner cylinder top
+        (41 40 43 42)//square
+        (40 44 47 43)//E
+        (43 47 46 42)//N
+        (42 46 45 41)//W
+        (41 45 44 40)//S
+    )
+    patch internal_inner
+    (
+        // Cap inner cylinder sides
+        (36 39 47 44)//W
+        (38 39 47 46)//N
+        (38 37 45 46)//W
+        (37 36 44 45)//S
+    )
+    patch internal_outer
+    (
+        // Cap cladding cylinder sides
+        (0 3 11 8)//NE
+        (5 3 11 13)//NW
+        (5 7 15 13)//SW
+        (7 0  8 15)//SE
+    )
+    patch internal_capTop
+    (
+        // Cap cladding top
+        (8 9 10 11)//NE
+        (11 10 12 13)//NW
+        (13 12 14 15)//SW
+        (15 14 9 8)//SE
+    )
+    patch internal_rodBottom
+    (
+        // Rod cladding bottom
+        (16 17 18 19)//NE
+        (19 18 20 21)//NW
+        (21 20 22 23)//SW
+        (23 22 17 16)//SE
+    )
+);
+
+mergePatchPairs //to remove internal boundaries
+(
+    (internal_outer internal_inner)
+    (internal_capTop internal_rodBottom)
+);
+
+// ************************************************************************* //

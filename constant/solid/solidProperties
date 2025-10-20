@@ -1,0 +1,45 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.2                                |
+|   \\  /    A nd           | Web:         http://www.foam-extend.org         |
+|    \\/     M anipulation  | For copyright notice see file Copyright         |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      solidProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// LinearGeometry models = for small strains, small rotation
+//solidModel linearGeometry; // solves for increment of displacement (DD)
+solidModel    linearGeometryTotalDisplacement; // solves for displacement (D)
+//solidModel unsLinearGeometry; // uns = for unstructured mesh
+
+"linearGeometryTotalDisplacementCoeffs|unsLinearGeometryCoeffs|linearGeometryCoeffs"
+{
+    // Maximum number of momentum correctors
+    nCorrectors              125;
+    convergenceTolerance    1e-7;
+    relConvergenceTolerance 1e-3;
+
+    // Solution tolerance for displacement
+    solutionTolerance 1e-6;//1e-07; 
+
+    // Alternative solution tolerance for displacement
+    alternativeTolerance 1e-7;//1e-08; 
+
+    // Relative solution tolerance for displacement in outer FSI iterations
+    // Material law solution tolerance
+    //materialTolerance 1e-05;
+
+    // Write frequency for the residuals
+    infoFrequency   100;
+
+    restart yes;
+}
+// ************************************************************************* //

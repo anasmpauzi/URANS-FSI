@@ -1,0 +1,45 @@
+#!/bin/bash
+# ---------------------------------------------------------------------------
+# Allclean script for URANS–FSI simulation (foam-extend 4.0 / solids4Foam)
+# Author: Anas Muhamad Pauzi
+# ---------------------------------------------------------------------------
+
+echo "----------------------------------------------"
+echo " Cleaning case directory..."
+echo "----------------------------------------------"
+
+# Remove parallel decomposition folders
+if ls processor* 1> /dev/null 2>&1; then
+    echo "Removing processor directories..."
+    rm -rf processor*
+fi
+
+# Detect the initial time directory (lowest numeric folder)
+initialTime=$(ls -d [0-9]* 2>/dev/null | sort -n | head -n 1)
+
+# Remove all time directories except the initial one
+for dir in [0-9]*; do
+    if [ "$dir" != "$initialTime" ] && [ -d "$dir" ]; then
+        echo "Removing time directory: $dir"
+        rm -rf "$dir"
+    fi
+done
+
+# Remove postProcessing and monitoring data
+for folder in postProcessing forceCoeffs_x forceCoeffs_y forces history minmax probesU; do
+    if [ -d "$folder" ]; then
+        echo "Removing $folder ..."
+        rm -rf "$folder"
+    fi
+done
+
+# Remove logs
+if ls log.* 1> /dev/null 2>&1; then
+    echo "Removing log files..."
+    rm -f log.*
+fi
+
+echo ""
+echo "----------------------------------------------"
+echo " Case directory cleaned successfully!"
+echo "----------------------------------------------"

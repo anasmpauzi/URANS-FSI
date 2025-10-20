@@ -1,0 +1,37 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     3.0                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      dynamicMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dynamicFvMesh dynamicMotionSolverFvMesh;
+
+solver velocityLaplacian;
+
+//diffusivity  uniform;
+//diffusivity  directional (0.1 0.1 1);
+//diffusivity  directional (0.1 10 1);
+//diffusivity  directional (0.1 5 1);
+//diffusivity  directional (0.1 1 1);
+//diffusivity  directional (10 0.1 1);
+//diffusivity  motionDirectional (10 0.1 1);
+//diffusivity  motionDirectional (10 10 1);
+//diffusivity  inverseDistance 1 (rod);
+//diffusivity  file motionDiffusivity;
+diffusivity  quadratic inverseDistance 1(rod);
+//diffusivity  exponential 0.1 inverseDistance 1 (rod);
+
+// ************************************************************************* //
+//first number determines the mean cell non-orthogonality;
+//second number determines the mean cell skewness.
+// ************************************************************************* //

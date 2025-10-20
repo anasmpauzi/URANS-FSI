@@ -1,0 +1,524 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | foam-extend: Open Source CFD                    |
+|  \\    /   O peration     | Version:     4.0                                |
+|   \\  /    A nd           | Web:         http://www.extend-project.de       |
+|    \\/     M anipulation  | Copyright:   ANAS MUHAMAD PAUZI                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale 0.001; // unit [mm]
+
+// Geometry
+d_tube            21; // Diameter of flow tube
+d_ro           10.01; // Outer diameter of the rod
+d_ri            8.83; // rod's Inner diameter - Needed to allign inlet mesh with rod
+L_rod           1060; // [mm]
+L_inlet            3; // *d_tube
+
+// radius [mm]
+r_tube          #calc "$d_tube/2"; // Radius of tube
+r_ro            #calc "$d_ro/2"; // Radius of rod inner diameter
+r_ri            #calc "$d_ri/2"; // Radius of rod inner diameter
+neg_r_tube      #calc "-$r_tube"; // Negetive value of radius
+neg_r_ro        #calc "-$r_ro";  // Negetive value of radius
+neg_r_ri        #calc "-$r_ri";  // Negetive value of radius
+
+// Axial position coordinate [mm]
+zFreeEnd          50; // At free_end
+zFixedEnd       #calc "$zFreeEnd+$L_rod"; // At fixed end
+zInlet          #calc "$zFreeEnd-($L_inlet*$d_tube)"; // At inlet
+
+// Gradient ratio
+gradr_cap          1; // Gradient for the intervals between square and circular
+gradr              1; // Radial(r) direction from tube wall
+//gradr_out          1; // Radial(r) direction from tube wall
+//gradr_in         1.5; // Radial(r) direction towards rod's wall
+
+// Number of cells intervals
+nCirc             48; // circumference intervals around diameter
+nCircQuarter    #calc "$nCirc/4"; // 1/4 of number of interval in circumference
+nRadial_annulus    8; // Around the annulus of the inlet, cap, and rod
+nRadial_rod        1; // Use to allign with annulus of the rod thickness
+nRadial_inner      3; // number of intervals between inner circle and the square
+
+// Z-grading at flow reattachment region
+L_reattachment     2; // *d_tube
+zReattachment   #calc "$zFreeEnd+($L_reattachment*$d_tube)"; //Flow circulation downstream (after free end)
+//L_reattachmentB    0; // *d_tube
+L_reattachmentT    1; // *d_tube
+L_reattachmentM #calc "$L_reattachment-$L_reattachmentT";// *d_tube
+//zReattachmentB     0; //#calc "$L_reattachmentB/$L_reattachment";
+zReattachmentM   0.5; //#calc "$L_reattachmentM/$L_reattachment";
+zReattachmentT   0.5; //#calc "$L_reattachmentT/$L_reattachment";
+dzReattachmentB    1; // [mm]
+dzReattachmentM  0.5; // [mm]
+dzReattachmentT    1; // [mm]
+//nAxial_reattachmentB 4;// intervals
+nAxial_reattachmentM 42;//#calc "round($L_reattachmentM*$d_tube/$dzReattachmentM)";// intervals
+nAxial_reattachmentT 32;// intervals
+nAxial_reattachment #calc "$nAxial_reattachmentM+$nAxial_reattachmentT";// intervals
+//wReattachmentB  0; //#calc "$nAxial_reattachmentB/$nAxial_reattachment";
+wReattachmentT  0.4324324324;//#calc "$nAxial_reattachmentT/$nAxial_reattachment";
+wReattachmentM  #calc "1-$wReattachmentT";
+//gradz_reattachmentB 1;//#calc "$dzReattachmentM/$dzReattachmentB";
+gradz_reattachmentT #calc "$dzReattachmentT/$dzReattachmentM";
+
+// Z-grading at outlet region
+L_outlet        #calc "$L_rod-($L_reattachment*$d_tube)";// [mm]
+dzOutlet           1;// [mm]
+nAxial_outlet   #calc "round($L_outlet/$dzOutlet)";// intervals
+
+// Z-grading at inlet region
+L_inletTop      0.5; // [mm]
+zTopInlet       0.007936507937;//#calc "$L_inletTop/($L_inlet*$d_tube)";
+zBottomInlet     #calc "1-$zTopInlet";
+dzInlet         0.25;
+nAxial_inletTop    1; //#calc "round($L_inletTop*$d_tube/$dzReattachmentB)"; // Upstream of free end
+nAxial_inletBottom 125;
+nAxial_inlet     #calc "$nAxial_inletBottom+$nAxial_inletTop";
+nAxial_inletAnnulus #calc "round($L_inlet*$d_tube/$dzReattachmentM)";
+wTopInlet        0.007936507937;//#calc "$nAxial_inletTop/$nAxial_inlet";
+wBottomInlet     #calc "1-$wTopInlet";
+gradz_inlet      #calc "$dzReattachmentB/$dzInlet";
+
+// Butterfly grid solid end cap
+dr_rod           #calc "($d_ro-$d_ri)/(2.5*$nRadial_rod)";// cell size of rod
+curveness        0.85; // curveness of inner square
+L_curved_sides   #calc "$nCircQuarter*$dr_rod"; // length of curved sides inner square
+L_sides          #calc "$L_curved_sides*$curveness";
+halfAngle        45.0;// degree
+radHalfAngle     #calc "degToRad($halfAngle)";//convert degree to radian
+s                #calc "$L_sides/2"; // half length of square side (mm)
+sc               #calc "$L_curved_sides/2"; // length of curved sides (mm)
+arc_ro           #calc "$r_ro*sin($radHalfAngle)"; //n
+arc_ri           #calc "$r_ri*sin($radHalfAngle)"; //
+arc_tube         #calc "$r_tube*sin($radHalfAngle)"; //
+neg_s            #calc "-$s"; //
+neg_sc           #calc "-$sc"; // 
+neg_arc_ro       #calc "$r_ro*sin(-$radHalfAngle)"; //
+neg_arc_ri       #calc "$r_ri*sin(-$radHalfAngle)"; //
+neg_arc_tube     #calc "$r_tube*sin(-$radHalfAngle)"; //
+
+vertices
+(
+// ANNULUS AROUND CANTILEVER ROD
+// Annulus at FixedEnd
+    ($r_ro 0 $zFixedEnd)  //                 0
+    ($r_tube 0 $zFixedEnd)//                 1
+    (0 $r_tube $zFixedEnd)//                 2
+    (0 $r_ro $zFixedEnd) //                  3
+    ($neg_r_tube 0 $zFixedEnd)//             4    
+    ($neg_r_ro 0 $zFixedEnd) //              5
+    (0 $neg_r_tube $zFixedEnd)//             6
+    (0 $neg_r_ro $zFixedEnd)//               7
+// Annulus at flow Reattachment point
+    ($r_ro 0 $zReattachment)//               8
+    ($r_tube 0 $zReattachment)//             9
+    (0 $r_tube $zReattachment)//            10
+    (0 $r_ro $zReattachment)//              11
+    ($neg_r_tube 0 $zReattachment)//        12
+    ($neg_r_ro 0 $zReattachment) //         13
+    (0 $neg_r_tube $zReattachment)//        14
+    (0 $neg_r_ro $zReattachment)//          15
+// Annulus at FreeEnd
+    ($r_ro 0 $zFreeEnd)//                   16
+    ($r_tube 0 $zFreeEnd)//                 17
+    (0 $r_tube $zFreeEnd)//                 18
+    (0 $r_ro $zFreeEnd)//                   19
+    ($neg_r_tube 0 $zFreeEnd)//             20
+    ($neg_r_ro 0 $zFreeEnd) //              21
+    (0 $neg_r_tube $zFreeEnd)//             22
+    (0 $neg_r_ro $zFreeEnd)//               23
+// INLET
+// Annulus at Inlet
+    ($r_ro 0 $zInlet) //                    24
+    ($r_tube 0 $zInlet) //                  25
+    (0 $r_tube $zInlet) //                  26
+    (0 $r_ro $zInlet) //                    27
+    ($neg_r_tube 0 $zInlet) //              28
+    ($neg_r_ro 0 $zInlet) //                29
+    (0 $neg_r_tube $zInlet) //              30
+    (0 $neg_r_ro $zInlet) //                31
+// Inner annulus at FreeEnd
+    ($r_ri 0 $zFreeEnd) //                  32
+    ($r_ro 0 $zFreeEnd) //                  33
+    (0 $r_ro $zFreeEnd) //                  34
+    (0 $r_ri $zFreeEnd) //                  35
+    ($neg_r_ro 0 $zFreeEnd) //              36
+    ($neg_r_ri 0 $zFreeEnd) //              37
+    (0 $neg_r_ro $zFreeEnd) //              38
+    (0 $neg_r_ri $zFreeEnd) //              39
+// Inner annulus at Inlet
+    ($r_ri 0 $zInlet) //                    40
+    ($r_ro 0 $zInlet) //                    41
+    (0 $r_ro $zInlet) //                    42
+    (0 $r_ri $zInlet) //                    43
+    ($neg_r_ro 0 $zInlet) //                44
+    ($neg_r_ri 0 $zInlet) //                45
+    (0 $neg_r_ro $zInlet) //                46
+    (0 $neg_r_ri $zInlet) //                47
+// centre cylinder at FreeEnd
+    ($s $neg_s $zFreeEnd) //                48 
+    ($neg_s $neg_s $zFreeEnd) //            49
+    ($neg_s $s $zFreeEnd) //                50
+    ($s $s $zFreeEnd) //                    51
+    ($arc_ri $neg_arc_ri $zFreeEnd)//       52
+    ($neg_arc_ri $neg_arc_ri $zFreeEnd)//   53
+    ($neg_arc_ri $arc_ri $zFreeEnd) //      54
+    ($arc_ri $arc_ri $zFreeEnd) //          55
+// centre cylinder at Inlet
+    ($s $neg_s $zInlet) //                  56
+    ($neg_s $neg_s $zInlet) //              57
+    ($neg_s $s $zInlet) //                  58
+    ($s $s $zInlet) //                      59
+    ($arc_ri $neg_arc_ri $zInlet) //        60
+    ($neg_arc_ri $neg_arc_ri $zInlet) //    61
+    ($neg_arc_ri $arc_ri $zInlet) //        62
+    ($arc_ri $arc_ri $zInlet) //            63
+);
+
+edges
+(
+// Annulus at zFixedEnd
+arc	 1	 2	($arc_tube	$arc_tube	$zFixedEnd)
+arc	 3	 0	($arc_ro	$arc_ro	$zFixedEnd)
+arc	 5	 3	($neg_arc_ro	$arc_ro	$zFixedEnd)
+arc	 4	 2	($neg_arc_tube	$arc_tube	$zFixedEnd)
+arc	 1	 6	($arc_tube	$neg_arc_tube	$zFixedEnd)
+arc	 0	 7	($arc_ro	$neg_arc_ro	$zFixedEnd)
+arc	 5	 7	($neg_arc_ro	$neg_arc_ro	$zFixedEnd)
+arc	 4	 6	($neg_arc_tube	$neg_arc_tube	$zFixedEnd)
+// Annulus at reattachment point
+arc	 9	10	($arc_tube	$arc_tube	$zReattachment)
+arc	11	 8	($arc_ro	$arc_ro	$zReattachment)
+arc	13	11	($neg_arc_ro	$arc_ro	$zReattachment)
+arc	12	10	($neg_arc_tube	$arc_tube	$zReattachment)
+arc	 9	14	($arc_tube	$neg_arc_tube	$zReattachment)
+arc	 8	15	($arc_ro	$neg_arc_ro	$zReattachment)
+arc	13	15	($neg_arc_ro	$neg_arc_ro	$zReattachment)
+arc	12	14	($neg_arc_tube	$neg_arc_tube	$zReattachment)
+// Annulus at zFreeEnd
+arc	17	18	($arc_tube	$arc_tube	$zFreeEnd)
+arc	19	16	($arc_ro	$arc_ro	$zFreeEnd)
+arc	21	19	($neg_arc_ro	$arc_ro	$zFreeEnd)
+arc	20	18	($neg_arc_tube	$arc_tube	$zFreeEnd)
+arc	17	22	($arc_tube	$neg_arc_tube	$zFreeEnd)
+arc	16	23	($arc_ro	$neg_arc_ro	$zFreeEnd)
+arc	21	23	($neg_arc_ro	$neg_arc_ro	$zFreeEnd)
+arc	20	22	($neg_arc_tube	$neg_arc_tube	$zFreeEnd)
+//  Annulus at zInlet
+arc	25	26	($arc_tube	$arc_tube	$zInlet)
+arc	27	24	($arc_ro	$arc_ro	$zInlet)
+arc	29	27	($neg_arc_ro	$arc_ro	$zInlet)
+arc	28	26	($neg_arc_tube	$arc_tube	$zInlet)
+arc	25	30	($arc_tube	$neg_arc_tube	$zInlet)
+arc	24	31	($arc_ro	$neg_arc_ro	$zInlet)
+arc	29	31	($neg_arc_ro	$neg_arc_ro	$zInlet)
+arc	28	30	($neg_arc_tube	$neg_arc_tube	$zInlet)
+//  Inner annulus at zFreeEnd
+arc	33	34	($arc_ro	$arc_ro	$zFreeEnd)
+arc	35	32	($arc_ri	$arc_ri	$zFreeEnd)
+arc	37	35	($neg_arc_ri	$arc_ri	$zFreeEnd)
+arc	36	34	($neg_arc_ro	$arc_ro	$zFreeEnd)
+arc	33	38	($arc_ro	$neg_arc_ro	$zFreeEnd)
+arc	32	39	($arc_ri	$neg_arc_ri	$zFreeEnd)
+arc	37	39	($neg_arc_ri	$neg_arc_ri	$zFreeEnd)
+arc	36	38	($neg_arc_ro	$neg_arc_ro	$zFreeEnd)
+//  Inner annulus at zInlet
+arc	41	42	($arc_ro	$arc_ro	$zInlet)
+arc	43	40	($arc_ri	$arc_ri	$zInlet)
+arc	45	43	($neg_arc_ri	$arc_ri	$zInlet)
+arc	44	42	($neg_arc_ro	$arc_ro	$zInlet)
+arc	41	46	($arc_ro	$neg_arc_ro	$zInlet)
+arc	40	47	($arc_ri	$neg_arc_ri	$zInlet)
+arc	45	47	($neg_arc_ri	$neg_arc_ri	$zInlet)
+arc	44	46	($neg_arc_ro	$neg_arc_ro	$zInlet)
+//  Centre cylinder at zFreeEnd
+arc	55	52	($r_ri		0		$zFreeEnd)
+arc	52	53	(0		$neg_r_ri	$zFreeEnd)
+arc	53	54	($neg_r_ri	0		$zFreeEnd)
+arc	54	55	(0		$r_ri		$zFreeEnd)
+arc	51	48	($sc	        0		$zFreeEnd)
+arc	48	49	(0		$neg_sc	$zFreeEnd)
+arc	49	50	($neg_sc	0		$zFreeEnd)
+arc	50	51	(0	      	$sc		$zFreeEnd)
+//  Centre cylinder at zInlet
+arc	63	60	($r_ri		0		$zInlet)
+arc	60	61	(0		$neg_r_ri	$zInlet)
+arc	61	62	($neg_r_ri	0		$zInlet)
+arc	62	63	(0		$r_ri		$zInlet)
+arc	59	56	($sc	        0		$zInlet)
+arc	56	57	(0		$neg_sc	$zInlet)
+arc	57	58	($neg_sc	0		$zInlet)
+arc	58	59	(0	      	$sc		$zInlet)
+);
+
+blocks
+(
+//  Annulus around rod
+    hex (8	9	10	11	0	1	2	3) 
+    ($nRadial_annulus $nCircQuarter $nAxial_outlet)//NE
+    simpleGrading 
+        ($gradr 1 1)
+    hex (11	10	12	13	3	2	4	5) 
+    ($nRadial_annulus $nCircQuarter $nAxial_outlet)//NW 
+    simpleGrading 
+        ($gradr 1 1)
+    hex (13	12	14	15	5	4	6	7) 
+    ($nRadial_annulus $nCircQuarter $nAxial_outlet)//SW 
+    simpleGrading 
+        ($gradr 1 1)
+    hex (15	14	9	8	7	6	1	0) 
+    ($nRadial_annulus $nCircQuarter $nAxial_outlet)//SE
+    simpleGrading 
+        ($gradr 1 1)
+//  Annulus around Reattachment lenght
+    hex (16	17	18	19	8	9	10	11) 
+    ($nRadial_annulus $nCircQuarter $nAxial_reattachment)//NE
+    simpleGrading 
+        ($gradr // Radial 
+        1       // Circumference
+            (   // Axial
+            //($zReattachmentB $wReattachmentB $gradz_reattachmentB)
+            ($zReattachmentM $wReattachmentM                    1)
+            ($zReattachmentT $wReattachmentT $gradz_reattachmentT)
+            )
+        )
+    hex (19	18	20	21	11	10	12	13) 
+    ($nRadial_annulus $nCircQuarter $nAxial_reattachment)//NW      
+    simpleGrading 
+        ($gradr // Radial 
+        1       // Circumference
+            (   // Axial
+            //($zReattachmentB $wReattachmentB $gradz_reattachmentB)
+            ($zReattachmentM $wReattachmentM                    1)
+            ($zReattachmentT $wReattachmentT $gradz_reattachmentT)
+            )
+        )    hex (21	20	22	23	13	12	14	15) 
+    ($nRadial_annulus $nCircQuarter $nAxial_reattachment)//SW   
+    simpleGrading 
+        ($gradr // Radial 
+        1       // Circumference
+            (   // Axial
+            //($zReattachmentB $wReattachmentB $gradz_reattachmentB)
+            ($zReattachmentM $wReattachmentM                    1)
+            ($zReattachmentT $wReattachmentT $gradz_reattachmentT)
+            )
+        )    hex (23	22	17	16	15	14	9	8) 
+    ($nRadial_annulus $nCircQuarter $nAxial_reattachment)//SE  
+    simpleGrading 
+        ($gradr // Radial 
+        1       // Circumference
+            (   // Axial
+            //($zReattachmentB $wReattachmentB $gradz_reattachmentB)
+            ($zReattachmentM $wReattachmentM                    1)
+            ($zReattachmentT $wReattachmentT $gradz_reattachmentT)
+            )
+        )
+// Inlet
+//  Annulus
+    hex (24	25	26	27	16	17	18	19) 
+    ($nRadial_annulus $nCircQuarter $nAxial_inletAnnulus)//NE
+    simpleGrading ($gradr 1 1)
+    hex (27	26	28	29	19	18	20	21) 
+    ($nRadial_annulus $nCircQuarter $nAxial_inletAnnulus)//NW 
+    simpleGrading ($gradr 1 1)
+    hex (29	28	30	31	21	20	22	23) 
+    ($nRadial_annulus $nCircQuarter $nAxial_inletAnnulus)//SW 
+    simpleGrading ($gradr 1 1)
+    hex (31	30	25	24	23	22	17	16) 
+    ($nRadial_annulus $nCircQuarter $nAxial_inletAnnulus)//SE
+    simpleGrading ($gradr 1 1)
+    //  inner annulus
+    hex (40	41	42	43	32	33	34	35) 
+    ($nRadial_rod $nCircQuarter $nAxial_inlet)//NE
+    simpleGrading 
+    	(1 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+    hex (43	42	44	45	35	34	36	37) 
+    ($nRadial_rod $nCircQuarter $nAxial_inlet)//NW 
+    simpleGrading
+    	(1 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+    hex (45	44	46	47	37	36	38	39) 
+    ($nRadial_rod $nCircQuarter $nAxial_inlet)//SW 
+    simpleGrading 
+    	(1 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+    hex (47	46	41	40	39	38	33	32) 
+    ($nRadial_rod $nCircQuarter $nAxial_inlet)//SE
+    simpleGrading 
+    	(1 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+//  inner cylinder
+    hex (57	56	59	58	49	48	51	50) 
+    ($nCircQuarter $nCircQuarter $nAxial_inlet)//square
+    simpleGrading 
+    	(1 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+    hex (56	60	63	59	48	52	55	51) 
+    ($nRadial_inner $nCircQuarter $nAxial_inlet)//East 
+    simpleGrading 
+    	($gradr_cap 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	) 
+    hex (59	63	62	58	51	55	54	50) 
+    ($nRadial_inner $nCircQuarter $nAxial_inlet)//North 
+    simpleGrading 
+    	($gradr_cap 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+    hex (58	62	61	57	50	54	53	49) 
+    ($nRadial_inner $nCircQuarter $nAxial_inlet)//West 
+    simpleGrading 
+    	($gradr_cap 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+    hex (57	61	60	56	49	53	52	48) 
+    ($nRadial_inner $nCircQuarter $nAxial_inlet)//South
+    simpleGrading 
+    	($gradr_cap 1 
+            ( // Axial
+            ($zBottomInlet $wBottomInlet            1)
+            ($zTopInlet    $wTopInlet    $gradz_inlet)
+            )
+    	)
+);
+
+patches // boundaries
+(
+patch outlet					
+(					
+(	0	1	2	3	)
+(	5	4	2	3	)
+(	5	4	6	7	)
+(	0	1	6	7	)
+)					
+patch inlet					
+(					
+(	24	25	26	27	)
+(	29	28	26	27	)
+(	29	28	30	31	)
+(	24	25	30	31	)
+(	40	41	42	43	)
+(	45	44	42	43	)
+(	45	44	46	47	)
+(	40	41	46	47	)
+(	59	56	57	58	)
+(	56	60	63	59	)
+(	58	62	63	59	)
+(	57	61	62	58	)
+(	56	60	61	57	)
+)				
+wall rod					
+(					
+(	0	3	11	8	)
+(	11	13	5	3	)
+(	13	15	7	5	)
+(	15	8	0	7	)
+// left sides of Reattachment length
+(	21	19	11	13	)//TL
+(	21	23	15	13	)//BL
+(	19	16	8	11	)//TR
+(	23	16	8	15	)//BR
+// bottom face annulus
+(	32	33	34	35	)
+(	37	36	34	35	)
+(	37	36	38	39	)
+(	32	33	38	39	)
+// bottom face inner cylinder
+(	51	48	49	50	)
+(	48	52	55	51	)
+(	50	54	55	51	)
+(	49	53	54	50	)
+(	48	52	53	49	)
+)					
+wall tube					
+(					
+(	9	10	2	1	)
+(	10	12	4	2	)
+(	12	14	6	4	)
+(	14	9	1	6	)
+(	17	18	10	9	)
+(	18	20	12	10	)
+(	20	22	14	12	)
+(	22	17	9	14	)
+(	25	26	18	17	)
+(	26	28	20	18	)
+(	28	30	22	20	)
+(	30	25	17	22	)
+)										
+patch internal1_out					
+(					
+(	24	27	19	16	)
+(	27	29	21	19	)
+(	29	31	23	21	)
+(	31	24	16	23	)
+)					
+patch internal1_in					
+(					
+(	41	42	34	33	)
+(	42	44	36	34	)
+(	44	46	38	36	)
+(	46	41	33	38	)
+)					
+patch internal2_out					
+(					
+(	40	43	35	32	)
+(	43	45	37	35	)
+(	45	47	39	37	)
+(	47	40	32	39	)
+)					
+patch internal2_in					
+(					
+(	60	63	55	52	)
+(	63	62	54	55	)
+(	61	62	54	53	)
+(	61	60	52	53	)
+)
+);
+
+mergePatchPairs //to remove internal boundaries
+(
+    (internal1_in internal1_out)
+    (internal2_in internal2_out)
+);
+
+// ************************************************************************* //
