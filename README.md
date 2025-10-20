@@ -59,7 +59,7 @@ If you use this repository, please cite the following works:
 Muhamad Pauzi, A., Iacovides, H., Cioncolini, A., Li, H., & Nabawy, M. R. A. (2024). *Application of URANS Simulation and Experimental Validation of Axial Flow-Induced Vibrations on a Blunt-End Cantilever Rod for Nuclear Applications*. Arabian Journal for Science and Engineering. (https://doi.org/10.1007/s13369-024-09505-5)
 
 Muhamad Pauzi, A. (2025). URANS–FSI Case Files and Scripts.
-Zenodo. DOI: 
+Zenodo. DOI: https://doi.org/10.5281/zenodo.17399072
 
 💡 Acknowledgements
 
