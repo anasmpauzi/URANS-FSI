@@ -17,6 +17,13 @@ Muhamad Pauzi, A., Iacovides, H., Cioncolini, A., Li, H., & Nabawy, M. R. A. (20
 - **Manuscript Under Review:**  
   *Best-Practice Recommendations for Axial Flow-Induced Vibration Simulation* (submitted to *Journal of Nuclear Engineering*).
 
+- **Research Videos:**  
+  Muhamad Pauzi, A. (2024a). *Video of axial flow-induced vibration (FIV) simulations at different axial positions using RSM LRR and EVM k–ω SST models.*  
+  [https://doi.org/10.48420/27925344.v1](https://doi.org/10.48420/27925344.v1)  
+  
+  Muhamad Pauzi, A. (2024b). *Video of axial flow-induced vibration (FIV) simulations at varying annulus Reynolds numbers using RSM LRR and EVM k–ω SST models.*  
+  [https://doi.org/10.48420/27936300.v1](https://doi.org/10.48420/27936300.v1)
+
 ---
 
 ## ⚙️ Repository Contents
